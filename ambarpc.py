@@ -66,6 +66,31 @@ MSG_RESTART_WEBSERVER = 0x2000003
 
 MSG_UPGRADE = 0x1000003  # param: upgrade file
 
+# response err 
+ERR_DICT={-1:"ERROR_NETCTRL_UNKNOWN_ERROR",
+-3:"ERROR_NETCTRL_SESSION_START_FAIL",
+-4:"ERROR_NETCTRL_INVALID_TOKEN",
+-5:"ERROR_NETCTRL_REACH_MAX_CLNT",
+-7:"ERROR_NETCTRL_JSON_PACKAGE_ERROR",
+-8:"ERROR_NETCTRL_JSON_PACKAGE_TIMEOUT",
+-9:"ERROR_NETCTRL_JSON_SYNTAX_ERROR",
+-13:"ERROR_NETCTRL_INVALID_OPTION_VALUE",
+-14:"ERROR_NETCTRL_INVALID_OPERATION",
+-16:"ERROR_NETCTRL_HDMI_INSERTED",
+-17:"ERROR_NETCTRL_NO_MORE_SPACE",
+-18:"ERROR_NETCTRL_CARD_PROTECTED",
+-19:"ERROR_NETCTRL_NO_MORE_MEMORY",
+-20:"ERROR_NETCTRL_PIV_NOT_ALLOWED",
+-21:"ERROR_NETCTRL_SYSTEM_BUSY",
+-22:"ERROR_NETCTRL_APP_NOT_READY",
+-23:"ERROR_NETCTRL_OPERATION_UNSUPPORTED",
+-24:"ERROR_NETCTRL_INVALID_TYPE",
+-25:"ERROR_NETCTRL_INVALID_PARAM",
+-26:"ERROR_NETCTRL_INVALID_PATH",
+-27:"ERROR_NETCTRL_DIR_EXIST",
+-28:"ERROR_NETCTRL_PERMISSION_DENIED",
+-29:"ERROR_NETCTRL_AUTHENTICATION_FAILED"}
+
 logger = logging.getLogger(__name__)
 
 
@@ -175,9 +200,12 @@ class AmbaRPCClient(object):
         """Sends single RPC request, raises RPCError when rval is not 0"""
         self.send_message(msg_id, **kwargs)
         resp = self.wait_for_message(msg_id, timeout=timeout)
-
-        if resp.get('rval', 0) != 0 and raise_on_error:
-            raise RPCError(resp)
+        
+        rval=resp.get('rval', 0) 
+        if rval!= 0 and raise_on_error:
+            print "ERROR:",ERR_DICT[rval]
+            #raise RPCError(resp)
+            quit()
 
         return resp
 
@@ -313,5 +341,9 @@ if __name__ == '__main__':
     def testing(*args, **kwargs):
         print 'event:', args, kwargs
 
-    pprint.pprint(c.battery())
+    #pprint.pprint(c.record_time())
+    #pprint.pprint(c.ls('/tmp/SD0/DCIM/200116000/'))
+    #pprint.pprint(c.upload('/tmp/SD0/DCIM/143451AA.txt',"lllsldajscoasjifho"))
+    pprint.pprint(c.config_get())
+    c.config_set('video_resolution','1008P')
     c.run()
